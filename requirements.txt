@@ -1,0 +1,6 @@
+django>=5.0
+djangorestframework
+celery
+aioredis
+uvicorn
+psycopg2-binary

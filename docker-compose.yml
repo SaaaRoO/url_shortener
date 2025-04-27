@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    environment:
+      - DB_NAME=bee_orders
+      - DB_USER=admin
+      - DB_PASSWORD=QydMKBLYb3nHqVkX8TFP5jCrpEuStA9N
+      - DB_HOST=77.37.120.167
+      - DB_PORT=5431
+      - DB_TEST_NAME=test_bee_orders
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - celery
+    
+  
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  
+  celery:
+    build: .
+    command: celery -A src worker --loglevel=info
+    environment:
+      - DB_NAME=bee_orders
+      - DB_USER=admin
+      - DB_PASSWORD=QydMKBLYb3nHqVkX8TFP5jCrpEuStA9N
+      - DB_HOST=77.37.120.167
+      - DB_PORT=5431
+    depends_on:
+      - redis
+

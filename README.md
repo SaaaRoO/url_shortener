@@ -104,10 +104,17 @@ src/
 │   │   └── url_repository.py    # Database and cache handling
 │   ├── events/
 │   │   └── tasks.py             # Celery background tasks
-│   └── views.py                  # Async API endpoints
-├── config/                             # Django settings
+│   └── Interfaces/              #API endpoint and url
+|   │    └── views.py 
+|   │    └── urls.py  
+|   │    └── serilizers.py  
+|   └── models.py                 #Database model
+├── tests/  
+|     └── test_url_shortener.py            
+├── config/                       #Django and celery sittings                  
 ├── manage.py
 ├── Dockerfile
+├── pytest.ini
 ├── docker-compose.yml
 ├── requirements.txt
 └── README.md

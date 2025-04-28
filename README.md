@@ -1,4 +1,4 @@
-# Async URL Shortener 🚀
+# Async URL Shortener 
 
 A **highly scalable**, fully **asynchronous URL shortener** built with **Django**, **Celery**, **Redis**, and **PostgreSQL**.  
 Designed to efficiently handle high traffic using caching and background tasks to minimize database load and optimize performance.
@@ -7,14 +7,14 @@ Designed to efficiently handle high traffic using caching and background tasks t
 
 ## Features ✨
 
-- ⚡ Asynchronous URL shortening
-- 🔗 Retrieve original URLs from shortened links
-- 📈 Track URL usage statistics (click counts)
-- 🛡️ Rate limiting to prevent abuse
-- 🚀 Caching layer using Redis
-- 🧅 Background tasks with Celery
-- 🐳 Full Docker support for easy setup
-- 📈 Optimized for scalability and performance
+-  Asynchronous URL shortening
+-  Retrieve original URLs from shortened links
+-  Track URL usage statistics (click counts)
+-  Rate limiting to prevent abuse
+-  Caching layer using Redis
+-  Background tasks with Celery
+-  Full Docker support for easy setup
+-  Optimized for scalability and performance
 
 ---
 
@@ -30,7 +30,7 @@ Designed to efficiently handle high traffic using caching and background tasks t
 
 ---
 
-## Architecture Diagram 📈
+## Docker Architecture Diagram 
 
 ```plaintext
 +-------------+    +--------------+    +------------+
@@ -122,7 +122,7 @@ src/
 
 ---
 
-## Installation 🛠
+## Installation 
 
 ### Prerequisites
 
@@ -158,7 +158,7 @@ Access:
 
 ---
 
-## API Endpoints 🔥
+## API Endpoints 
 
 | Method | Endpoint | Description |
 |:------:|:--------:|:-----------:|
@@ -213,7 +213,7 @@ GET /api/stats/abc123
 
 ---
 
-## Environment Variables 📜
+## Environment Variables 
 
 Create a `.env` file based on `.env.example`:
 

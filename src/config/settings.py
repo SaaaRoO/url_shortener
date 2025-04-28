@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "src.config.wsgi.application"
+ASGI_APPLICATION = "src.config.asgi.application"
 
 
 

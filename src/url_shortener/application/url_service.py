@@ -13,7 +13,8 @@ class URLShortenerService:
             return cached_url
 
         # Create a new shortened URL
-        url = await URLShortenerRepository.create_shortened_url(original_url)
+       
+        url = await sync_to_async(URLShortenerRepository.create_shortened_url)(original_url)
         # Cache the shortened URL for 15 minutes
         cache.set(original_url, url.shortened_url, timeout=60*15)  
         return url.shortened_url
@@ -21,7 +22,8 @@ class URLShortenerService:
     @staticmethod
     async def get_original_url(shortened_url):
         # Retrieve the original URL from the database
-        url = await URLShortenerRepository.get_url_by_shortened(shortened_url)
+        
+        url = await sync_to_async(URLShortenerRepository.get_url_by_shortened)(shortened_url)
         if url:
             return url.original_url
         return None

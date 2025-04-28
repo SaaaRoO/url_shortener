@@ -17,7 +17,7 @@ A highly scalable, fully asynchronous URL shortener built with Django, designed 
 
 ## Diagram - Full Workflow
 
-```mermaid
+
 sequenceDiagram
     participant User
     participant API Gateway

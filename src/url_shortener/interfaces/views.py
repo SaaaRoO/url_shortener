@@ -5,6 +5,7 @@ from src.url_shortener.infrastructure.url_repository import URLShortenerReposito
 from url_shortener.application.url_service import URLShortenerService
 from asgiref.sync import sync_to_async
 
+
 class URLShortenerView(APIView):
     # POST method for shortening URL
     async def post(self, request):
@@ -29,7 +30,6 @@ class URLShortenerView(APIView):
 
 
 class URLStatsView(APIView):
-
     # GET method for fetching URL stats
     async def get(self, request, shortened_url):
         try:

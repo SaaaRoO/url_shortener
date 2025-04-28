@@ -1,0 +1,4 @@
+[INFO] [2025-04-28 20:03:29,537] [autoreload] Watching for file changes with StatReloader
+[WARNING] [2025-04-28 20:09:40,875] [log] Not Found: /api/shorten/
+[WARNING] [2025-04-28 20:09:40,875] [basehttp] "POST /api/shorten/ HTTP/1.1" 404 2904
+[INFO] [2025-04-28 20:11:40,344] [autoreload] C:\Users\Sara\Documents\GitHub\url_shortener\src\url_shortener\interfaces\urls.py changed, reloading.

@@ -56,3 +56,17 @@ sequenceDiagram
 
     Note over API Gateway, ShortenerService: Rate limit checked at Gateway or View level
     Note over ShortenerService, Database: Async ORM operations
+
+
+3. Docker Architecture UML
+
++-------------+     +--------------+     +------------+
+|    web      |<--->|     redis     |<--->|   celery   |
+| (Django App)|     | (cache+broker)|     | (worker)   |
++-------------+     +--------------+     +------------+
+      |
+      |
++-------------+
+|     db      |
+| (PostgreSQL)|
++-------------+

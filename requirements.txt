@@ -1,6 +1,9 @@
 django>=5.0
 djangorestframework
 celery
+pytest-asyncio
 aioredis
 uvicorn
+django-redis==5.4.0
+gunicorn>=21.2.0
 psycopg2-binary

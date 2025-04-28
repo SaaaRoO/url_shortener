@@ -1,0 +1,7 @@
+[INFO] [2025-04-27 19:58:46,457] [autoreload] Watching for file changes with StatReloader
+[WARNING] [2025-04-27 21:20:20,959] [log] Not Found: /api/cart/
+[WARNING] [2025-04-27 21:20:20,959] [basehttp] "POST /api/cart/ HTTP/1.1" 404 2895
+[WARNING] [2025-04-27 21:20:55,184] [log] Not Found: /api/cart/
+[WARNING] [2025-04-27 21:20:55,189] [basehttp] "POST /api/cart/ HTTP/1.1" 404 2895
+[WARNING] [2025-04-27 21:21:31,003] [log] Not Found: /api/cart/
+[WARNING] [2025-04-27 21:21:31,010] [basehttp] "POST /api/cart/ HTTP/1.1" 404 2895

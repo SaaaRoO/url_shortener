@@ -14,6 +14,7 @@ Designed to efficiently handle high traffic using caching and background tasks t
 -  Caching layer using Redis
 -  Background tasks with Celery
 -  Full Docker support for easy setup
+-  Testing using Django pytest
 -  Optimized for scalability and performance
 
 ---
@@ -276,6 +277,20 @@ docker-compose exec web celery -A src.config worker --loglevel=info
 - Example: Allow max 100 shortenings per IP per hour.
 
 ---
+
+## Testing 
+
+- inside Docker container run:
+
+```bash
+docker-compose run --rm web pytest -v
+```
+
+## Result
+
+![alt text](image-3.png)
+
+
 
 > **Made with ❤️ for high performance and scalability.**
 

@@ -162,54 +162,70 @@ Access:
 
 | Method | Endpoint | Description |
 |:------:|:--------:|:-----------:|
-| POST | `/api/shorten/` | Shorten an original URL |
-| GET  | `/api/{shortened_url}` | Retrieve and redirect |
-| GET  | `/api/stats/{shortened_url}` | Get usage statistics |
+| POST | `/api/create/` | Shorten an original URL |
+| GET  | `/api/<str:short_code>/` | Retrieve and redirect |
+| GET  | `/api/<str:short_code>/stats/` | Get usage statistics |
 
 ---
 
 ## Example Requests
 
-### Shorten a URL
+### create a short  URL
 
 **Request:**
 ```http
-POST /api/shorten/
+POST /api/create/
 Content-Type: application/json
 {
-    "original_url": "https://www.example.com"
+    "original_url": "https://www.example.com/very/long/url"
 }
 ```
 
 **Response:**
 ```json
 {
-    "shortened_url": "abc123"
+    "original_url": "https://www.example.com/very/long/url",
+    "shortened_url": "http://localhost:8000/cwn1JO",
+    "short_code": "cwn1JO"
 }
 ```
+![alt text](image.png)
+
 
 ### Redirect from Shortened URL
 
 **Request:**
 ```http
-GET /api/abc123
+GET /api/cwn1JO/
 ```
 
-**Behavior:** Redirects to `https://www.example.com`
+**Behavior:** "original_url": "https://www.example.com/very/long/url"
+
+
+![alt text](image-1.png)
+
+
 
 ### URL Statistics
 
 **Request:**
 ```http
-GET /api/stats/abc123
+GET /api/cwn1JO/stats/
 ```
 
 **Response:**
 ```json
 {
-    "click_count": 10
+    "short_code": "cwn1JO",
+    "original_url": "https://www.example.com/very/long/url",
+    "shortened_url": "http://localhost:8000/cwn1JO",
+    "created_at": "2025-04-29T20:52:57.999122Z",
+    "last_accessed": "2025-04-29T20:55:47.102543Z",
+    "access_count": 1,
+    "is_active": true
 }
 ```
+![alt text](image-2.png)
 
 ---
 
@@ -240,7 +256,7 @@ DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
 If you want to run it manually:
 
 ```bash
-docker-compose exec web celery -A config worker --loglevel=info
+docker-compose exec web celery -A src.config worker --loglevel=info
 ```
 
 ---

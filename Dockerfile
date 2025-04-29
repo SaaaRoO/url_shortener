@@ -1,24 +1,32 @@
-# Use official Python image
+# Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH="/app/src:$PYTHONPATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=src.config.settings  
 
-# Set working directory
+# Set work directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Install system dependencies and dockerize
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc postgresql-client libpq-dev wget \
+    && wget -q https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz \
+    && tar -xzvf dockerize-linux-amd64-v0.6.1.tar.gz \
+    && mv dockerize /usr/local/bin/ \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy project
-COPY . .
+# Install Python dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port
-EXPOSE 8000
+# Copy project files
+COPY . /app/
 
-# Run Django server
-CMD ["gunicorn", "src.config.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
+# Run the app with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "4", "src.config.asgi:application"]

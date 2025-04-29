@@ -1,9 +1,30 @@
-django>=5.0
-djangorestframework
-celery
-pytest-asyncio
-aioredis
-uvicorn
+# Django and REST framework
+Django==4.2.7
+djangorestframework==3.14.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Async support
+asgiref==3.7.2
+uvicorn==0.24.0
+
+# Caching
+redis==5.0.0
 django-redis==5.4.0
-gunicorn>=21.2.0
-psycopg2-binary
+
+# Celery
+celery==5.3.4
+django-celery-beat==2.5.0
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
+pytest-asyncio==0.21.1
+
+# Production
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Utilities
+python-dotenv==1.0.0

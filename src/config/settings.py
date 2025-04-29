@@ -1,207 +1,204 @@
-from datetime import datetime
 import os
 from pathlib import Path
-
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-^u^6oq!6n!8hp*w2i09scvbq+48vnm)y$psfzxe7e-%k-zf66&"
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Base URL for shortened URLs
+BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:8000')
 
 # Application definition
-
 INSTALLED_APPS = [
-    "django.contrib.auth",
-    "django.contrib.contenttypes",  # Required for DRF
-    "django.contrib.sessions",      # Required for middleware
-    "django.contrib.staticfiles",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    
+    # Third-party apps
     'rest_framework',
-    "url_shortener",
-    'django_redis',  # For caching
-    'celery',  # For background tasks
+    
+    # Local apps
+    'src.url_shortener',
+
+    
+
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Rate limiting configuration (using DRF throttling)
-REST_FRAMEWORK = {
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '5/min',  # 5 requests per minute
-    }
-}
-
-ROOT_URLCONF = "src.config.urls"
+ROOT_URLCONF = 'src.config.urls'
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
 
-ASGI_APPLICATION = "src.config.asgi.application"
+ASGI_APPLICATION = 'src.config.asgi.application'
 
-
-
-
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bee_orders', 
-        'USER': 'admin',      
-        'PASSWORD': 'QydMKBLYb3nHqVkX8TFP5jCrpEuStA9N',  
-        'HOST': '77.37.120.167',         
-        'PORT': '5431',             
-        'TEST': {
-            'NAME': 'test_bee_orders', 
-        },
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.environ.get('DB_NAME', 'url_shortener'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+        'HOST': os.getenv('DB_HOST', 'localhost' if os.getenv('RUNNING_LOCALLY') else 'db'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
-# Celery configuration
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 
-# Caching setup
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 
+
+# Celery Configuration
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery Beat Schedule - Using native Celery Beat scheduler instead of django-celery-beat
+CELERY_BEAT_SCHEDULE = {
+    'clean-expired-urls': {
+        'task': 'url_shortener.events.tasks.clean_expired_urls',
+        'schedule': 86400.0,  # Once per day
+        'args': (30,),  # Expire URLs after 30 days of inactivity
+    },
+}
+
 # Password validation
-# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/4.1/topics/i18n/
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+    },
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+}
 
-# Directory where logs are stored
-LOGS_DIR = Path(BASE_DIR) / 'logs'
+# For development, allow DRF browsable API
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append(
+        'rest_framework.renderers.BrowsableAPIRenderer'
+    )
 
-# Ensure the log directory exists
-if not os.path.exists(LOGS_DIR):
-    os.makedirs(LOGS_DIR)
-    
-# Define product catalog service base URL
-PRODUCT_CATALOG_BASE_URL = "https://staging.bookbee.info/beeback/prod/api/stock"
-
-
-# Generate timestamp for log file naming
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-pid = os.getpid()  # Get the current process ID
-
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'skip_autoreload': {
-             '()': 'src.utils.logging_filters.SkipAutoreloadFilter',
-
-        },
-    },
     'formatters': {
         'verbose': {
-            'format': '[{levelname}] [{asctime}] [{module}] {message}',
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'filters': ['skip_autoreload'],  # Apply filter to console
-            'formatter': 'verbose',
-        },
-        'rotating_file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOGS_DIR, f'application_{timestamp}.log'),
-            'maxBytes': 10 * 1024 * 1024,  # 10 MB
-            'backupCount': 3,
-            'filters': ['skip_autoreload'],  # Apply filter to file logs
-            'formatter': 'verbose',
-        },
-        'error_file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(LOGS_DIR, 'error.log'),
-            'filters': ['skip_autoreload'],  # Apply filter to error logs
             'formatter': 'verbose',
         },
     },
+    'root': {
+        'handlers': ['console'],
+        'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+    },
     'loggers': {
         'django': {
-            'handlers': ['console', 'rotating_file', 'error_file'],
-            'level': 'DEBUG',
-            'propagate': True,
+            'handlers': ['console'],
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'url_shortener': {
+            'handlers': ['console'],
+            'level': os.environ.get('APP_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
     },
 }

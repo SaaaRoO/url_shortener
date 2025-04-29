@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import URLShortenerView, URLStatsView
+from .views import CreateShortenedURLView, GetOriginalURLView, GetURLStatsView
 
 urlpatterns = [
-    path('api/shorten/', URLShortenerView.as_view(), name='shorten-url'),  # Add trailing slash
-    path('api/<str:shortened_url>/', URLShortenerView.as_view(), name='get-original-url'),  # Add trailing slash
-    path('api/stats/<str:shortened_url>/', URLStatsView.as_view(), name='url-stats'),  # Add trailing slash
+    path('create/', CreateShortenedURLView.as_view(), name='shorten_url'),
+    path('<str:short_code>/', GetOriginalURLView.as_view(), name='redirect_url'),
+    path('<str:short_code>/stats/', GetURLStatsView.as_view(), name='url_stats'),
 ]

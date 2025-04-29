@@ -1,49 +1,87 @@
-version: '3.8'
+version: '3'
 
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: gunicorn src.config.wsgi:application --bind 0.0.0.0:8000
+    build: .
+    command: bash -c "dockerize -wait tcp://db:5432 -timeout 30s python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     depends_on:
+      - db 
       - redis
-      - db
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev_secret_key
+      - DB_ENGINE=django.db.backends.postgresql
+      - DJANGO_SETTINGS_MODULE=src.config.settings
+      - DB_NAME=url_shortener
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db  
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - BASE_URL=http://localhost:8000
 
   db:
-    image: postgres:14
-    restart: always
-    environment:
-      POSTGRES_DB: bee_orders
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: your_password
-    ports:
-      - "5431:5432"
+    image: postgres:13
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=url_shortener
 
   redis:
-    image: redis:7
-    restart: always
+    image: redis:6-alpine
     ports:
       - "6379:6379"
 
   celery:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A src.config.celery worker --loglevel=info
+    build: .
+    command: bash -c "sleep 5 && celery -A src.config worker -l INFO"
     volumes:
       - .:/app
     depends_on:
+      - web
       - redis
-      - db
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev_secret_key
+      - DB_ENGINE=django.db.backends.postgresql
+      - DJANGO_SETTINGS_MODULE=src.config.settings
+      - DB_NAME=url_shortener
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db  
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  celery-beat:
+    build: .
+    command: bash -c "sleep 5 && celery -A src.config beat -l INFO --scheduler=celery.beat.PersistentScheduler"
+    volumes:
+      - .:/app
+    depends_on:
+      - celery
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev_secret_key
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=url_shortener
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db  
+      - DB_PORT=5432
+      - DJANGO_SETTINGS_MODULE=src.config.settings
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
 volumes:
   postgres_data:

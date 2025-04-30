@@ -1,106 +1,104 @@
+from django.urls import reverse
 import pytest
 from rest_framework import status
-from django.urls import reverse
+from rest_framework.test import APITestCase
 from unittest.mock import patch
 
 from src.url_shortener.events.tasks import update_url_stats
+from src.url_shortener.models import URL
 
-pytestmark = pytest.mark.django_db
-
-# Using DRF's APIClient for testing views
-@pytest.fixture
-def client():
-    from rest_framework.test import APIClient
-    return APIClient()
-
-# Test for successful URL shortening
-@patch("src.url_shortener.application.url_service.URLService.create_shortened_url")
-def test_create_shortened_url_success(mock_create, client):
-    mock_create.return_value = {
-        "short_code": "abc123",
-        "original_url": "https://example.com"
-    }
-
-    response = client.post(
-        reverse("shorten_url"),
-        {"original_url": "https://example.com"},
-        format="json"
-    )
-
-    assert response.status_code == status.HTTP_201_CREATED
-    assert "short_code" in response.json()
-    mock_create.assert_called_once_with("https://example.com")
-
-
-# Test for invalid URL format
-@patch("src.url_shortener.application.url_service.URLService.create_shortened_url")
-def test_create_shortened_url_error(mock_create, client):
-    mock_create.return_value = {"error": "Invalid URL format"}
-
-    response = client.post(
-        reverse("shorten_url"),
-        {"original_url": "invalid-url"},
-        format="json"
-    )
-
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "error" in response.json()
-    mock_create.assert_called_once_with("invalid-url")
-
-
-# Test for missing 'original_url' field
-def test_create_shortened_url_missing_field(client):
-    response = client.post(
-        reverse("shorten_url"),
-        {},  # Missing the 'original_url' field
-        format="json"
-    )
-
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "error" in response.json()
-
-
-# Test for getting original URL successfully
-@pytest.mark.asyncio
-async def test_get_original_url_success(mock_service, async_client):
-    mock_service.return_value = ("https://example.com", True)
-    response = await async_client.get(reverse("redirect_url", args=["abc123"]))
-    assert response.status_code == 200
-    assert response.data["original_url"] == "https://example.com"
-
-
-# Test for not found URL during redirection
-@pytest.mark.asyncio
-async def test_get_original_url_not_found(mock_service, async_client):
-    mock_service.return_value = (None, False)
-
-    response = await async_client.get(reverse("redirect_url", args=["invalid"]))
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert "error" in response.json()
-
-
-# Test for not found URL stats
-@pytest.mark.asyncio
-async def test_get_url_stats_not_found(mock_stats, async_client):
-    mock_stats.return_value = None
-
-    response = await async_client.get(reverse("url_stats", args=["invalid"]))
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert "error" in response.json()
-
-
-# Test for Celery task call
-@patch('src.url_shortener.events.tasks.update_url_stats.delay')
-def test_update_url_stats(mock_delay, mocker):
-    # Mocking the URLService to ensure that the URL is found
-    mocker.patch('src.url_shortener.application.url_service.URLService.get_original_url', return_value=("https://example.com", True))
-
-    short_code = 'abc123'
+class URLShortenerViewTests(APITestCase):
     
-    # Call the task
-    update_url_stats(short_code)
-    
-    # Assert that delay was called with the correct argument
-    mock_delay.assert_called_once_with(short_code)
+    @patch("src.url_shortener.interfaces.views.URLService.create_shortened_url")
+    def test_create_shortened_url_success(self, mock_create):
+        mock_create.return_value = {
+            "short_code": "abc123",
+            "original_url": "https://example.com"
+        }
+
+        response = self.client.post(
+            reverse("shorten_url"),  
+            {"original_url": "https://example.com"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("short_code", response.data)
+
+    @patch("src.url_shortener.interfaces.views.URLService.create_shortened_url")
+    def test_create_shortened_url_error(self, mock_create):
+        mock_create.return_value = {"error": "Invalid URL format"}
+
+        response = self.client.post(
+            reverse("shorten_url"),
+            {"original_url": "invalid-url"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_create_shortened_url_missing_field(self):
+        response = self.client.post(
+            reverse("shorten_url"),
+            {},
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    @patch("src.url_shortener.interfaces.views.URLService.get_original_url")
+    def test_get_original_url_success(self, mock_get_original):
+        mock_get_original.return_value = ("https://example.com", True)
+
+        response = self.client.get(
+            reverse("redirect_url", args=["abc123"])
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["original_url"], "https://example.com")
+
+    @patch("src.url_shortener.interfaces.views.URLService.get_original_url")
+    def test_get_original_url_not_found(self, mock_get_original):
+        mock_get_original.return_value = (None, False)
+
+        response = self.client.get(
+            reverse("redirect_url", args=["invalid"])
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("error", response.data)
+
+    @patch("src.url_shortener.interfaces.views.URLService.get_url_stats")
+    def test_get_url_stats_success(self, mock_stats):
+        mock_stats.return_value = {
+            "original_url": "https://example.com",
+            "created_at": "2025-04-29T12:00:00Z",
+            "clicks": 42
+        }
+
+        response = self.client.get(
+            reverse("url_stats", args=["abc123"])
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["clicks"], 42)
+
+    @patch("src.url_shortener.interfaces.views.URLService.get_url_stats")
+    def test_get_url_stats_not_found(self, mock_stats):
+        mock_stats.return_value = None
+
+        response = self.client.get(
+            reverse("url_stats", args=["invalid"])
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("error", response.data)
+
+
+    @pytest.mark.django_db
+    def test_update_url_stats_task_updates_clicks(self):
+        url = URL.objects.create(
+            original_url='https://example.com',
+            short_code='abc123',
+           access_count=0
+        )
+
+        update_url_stats('abc123')
+
+        url.refresh_from_db()
+        assert url.access_count == 1

@@ -158,6 +158,8 @@ REST_FRAMEWORK = {
         'anon': '100/day',
     },
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    "DEFAULT_THROTTLE_CLASSES": [],
+    "DEFAULT_THROTTLE_RATES": {}
 }
 
 # For development, allow DRF browsable API

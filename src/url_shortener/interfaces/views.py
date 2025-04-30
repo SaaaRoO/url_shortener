@@ -1,11 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.shortcuts import redirect
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from asgiref.sync import async_to_sync
 from src.url_shortener.application.url_service import URLService
-from src.url_shortener.events.tasks import update_url_stats
+
 
 class CreateShortenedURLView(APIView):
     def post(self, request, *args, **kwargs):
@@ -24,17 +23,18 @@ class CreateShortenedURLView(APIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
 class GetOriginalURLView(APIView):
-    async def get(self, request, short_code, *args, **kwargs):
-        # Your asynchronous logic here
-        original_url = await self.some_async_service(short_code)
-        if original_url:
-            return Response({"original_url": original_url})
-        else:
-            return Response({"error": "URL not found"}, status=404)
-        
+    def get(self, request, short_code, *args, **kwargs):
+        original_url, success = async_to_sync(URLService.get_original_url)(short_code)
+
+        if not success:
+            return Response({"error": "URL not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"original_url": original_url}, status=status.HTTP_200_OK)
+
+
 class GetURLStatsView(APIView):
-    async def get(self, request, short_code, *args, **kwargs):
-        stats = await URLService.get_url_stats(short_code)
+    def get(self, request, short_code, *args, **kwargs):
+        stats = async_to_sync(URLService.get_url_stats)(short_code)
 
         if not stats:
             return Response({"error": "URL stats not found"}, status=status.HTTP_404_NOT_FOUND)

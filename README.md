@@ -135,14 +135,14 @@ src/
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/async-url-shortener.git
+git clone https://github.com/SaaaRoO/url_shortener/tree/develope
 cd async-url-shortener
 ```
 
 Copy environment variables:
 
 ```bash
-cp .env.example .env
+cp .env .env
 ```
 
 Build and start containers:
@@ -190,7 +190,7 @@ Content-Type: application/json
     "short_code": "cwn1JO"
 }
 ```
-![alt text](image.png)
+
 
 
 ### Redirect from Shortened URL
@@ -203,7 +203,7 @@ GET /api/cwn1JO/
 **Behavior:** "original_url": "https://www.example.com/very/long/url"
 
 
-![alt text](image-1.png)
+
 
 
 
@@ -284,10 +284,6 @@ docker-compose exec web celery -A src.config worker --loglevel=info
 ```bash
 docker-compose run --rm web pytest -v
 ```
-
-## Result
-
-![alt text](image-3.png)
 
 
 

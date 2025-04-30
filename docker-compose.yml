@@ -11,20 +11,8 @@ services:
     depends_on:
       - db 
       - redis
-    environment:
-      - DEBUG=True
-      - SECRET_KEY=dev_secret_key
-      - DB_ENGINE=django.db.backends.postgresql
-      - DJANGO_SETTINGS_MODULE=src.config.settings
-      - DB_NAME=url_shortener
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db  
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/1
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - BASE_URL=http://localhost:8000
+    env_file:
+      - .env
 
   db:
     image: postgres:13
@@ -48,19 +36,8 @@ services:
     depends_on:
       - web
       - redis
-    environment:
-      - DEBUG=True
-      - SECRET_KEY=dev_secret_key
-      - DB_ENGINE=django.db.backends.postgresql
-      - DJANGO_SETTINGS_MODULE=src.config.settings
-      - DB_NAME=url_shortener
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db  
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/1
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
 
   celery-beat:
     build: .
@@ -69,19 +46,8 @@ services:
       - .:/app
     depends_on:
       - celery
-    environment:
-      - DEBUG=True
-      - SECRET_KEY=dev_secret_key
-      - DB_ENGINE=django.db.backends.postgresql
-      - DB_NAME=url_shortener
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db  
-      - DB_PORT=5432
-      - DJANGO_SETTINGS_MODULE=src.config.settings
-      - REDIS_URL=redis://redis:6379/1
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
 
 volumes:
   postgres_data:

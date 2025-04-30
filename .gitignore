@@ -1,0 +1,102 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.p~ 
+*.swp
+.Python
+.env
+.venv
+venv/
+ENV/
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtualenv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+.env
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# VS Code
+.vscode/
+
+# pytest
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+# Docker
+*.pid
+*.seed
+*.bak
+*.old
+docker-compose.override.yml
+
+# PostgreSQL
+*.sql
+*.dump
+
+# Coverage reports
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+.coverage.*
+
+# Logs
+*.log
+logs/
+*.out
+
+# IDEs
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# macOS
+.DS_Store
+
+# JetBrains
+*.iml
+.idea/
+out/
+
+# Test files
+test_results/
+tests/__pycache__/
+
+# Other
+.env.*

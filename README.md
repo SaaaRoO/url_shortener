@@ -226,13 +226,12 @@ GET /api/cwn1JO/stats/
     "is_active": true
 }
 ```
-![alt text](image-2.png)
 
 ---
 
 ## Environment Variables 
 
-Create a `.env` file based on `.env.example`:
+Create a `.env` file based on `.env`:
 
 ```bash
 # PostgreSQL settings
@@ -246,7 +245,7 @@ POSTGRES_PORT=5432
 REDIS_URL=redis://redis:6379/0
 
 # Django settings
-DJANGO_SECRET_KEY=your_secret_key_here
+DJANGO_SECRET_KEY="(9(f@nv*lltx1^b8di#mmha)qr2)9)+5&ao24*=6o-g2*xa-w-"
 DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
 ```
 

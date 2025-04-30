@@ -42,6 +42,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'src.middlewares.rate_limit.RateLimitMiddleware',
 ]
 
 ROOT_URLCONF = 'src.config.urls'
@@ -103,7 +104,7 @@ CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULE = {
     'clean-expired-urls': {
         'task': 'url_shortener.events.tasks.clean_expired_urls',
-        'schedule': 86400.0,  # Once per day
+        'schedule': 3600.0,  # Run every hour
         'args': (30,),  # Expire URLs after 30 days of inactivity
     },
 }

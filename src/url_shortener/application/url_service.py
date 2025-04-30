@@ -1,5 +1,6 @@
 from typing import Dict, Any, Optional, Tuple
 from django.conf import settings
+from src.url_shortener.events.tasks import update_url_stats
 from src.url_shortener.infrastructure.url_repository import URLRepository
 from src.url_shortener.models import URL
 
@@ -26,7 +27,6 @@ class URLService:
             'shortened_url': shortened_url,
             'short_code': url.short_code
         }
-
     @staticmethod
     async def get_original_url(short_code: str) -> Tuple[Optional[str], bool]:
         url = await URLRepository.get_by_short_code(short_code)
@@ -34,24 +34,28 @@ class URLService:
         if not url:
             return None, False
 
-        # Update stats asynchronously
-        await URLRepository.update_stats(short_code)
+        # Trigger Celery task instead of direct DB update
+        update_url_stats.delay(short_code)
 
         return url.original_url, True
 
     @staticmethod
     async def get_url_stats(short_code: str) -> Optional[Dict[str, Any]]:
-        stats = await URLRepository.get_stats(short_code)
-
-        if not stats:
+        try:
+            stats = await URLRepository.get_stats(short_code)
+            if not stats:
+                return None
+            
+            return {
+                'short_code': stats['short_code'],
+                'original_url': stats['original_url'],
+                'shortened_url': f"{settings.BASE_URL}/{stats['short_code']}",
+                'created_at': stats['created_at'],
+                'last_accessed': stats['last_accessed'],
+                'access_count': stats['access_count'],
+                'is_active': stats['is_active']
+            }
+        except Exception as e:
+            # Log the error
+            print(f"Error fetching URL stats: {e}")
             return None
-
-        return {
-            'short_code': stats['short_code'],
-            'original_url': stats['original_url'],
-            'shortened_url': f"{settings.BASE_URL}/{stats['short_code']}",
-            'created_at': stats['created_at'],
-            'last_accessed': stats['last_accessed'],
-            'access_count': stats['access_count'],
-            'is_active': stats['is_active']
-        }

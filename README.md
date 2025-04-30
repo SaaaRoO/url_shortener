@@ -98,6 +98,8 @@ sequenceDiagram
 
 ```bash
 src/
+├── middlewares/
+│        └── rate_limit.py       #Custom middleware
 ├── url_shortener/
 │   ├── application/
 │   │   └── url_service.py       # Business logic

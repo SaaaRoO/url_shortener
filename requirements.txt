@@ -21,6 +21,7 @@ django-celery-beat==2.5.0
 pytest==7.4.3
 pytest-django==4.7.0
 pytest-asyncio==0.21.1
+pytest-mock
 
 # Production
 gunicorn==21.2.0
